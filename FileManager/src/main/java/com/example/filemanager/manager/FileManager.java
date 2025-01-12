@@ -6,6 +6,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -41,7 +42,7 @@ public class FileManager {
         File[] files = file.listFiles();
         HashMap<String, File> hashMap = new HashMap<>();
         for (int i = 0; i < files.length; i++) {
-            hashMap.put(files[i].getName(), files[i]);
+            hashMap.put(files[i].getName() + FilenameUtils.getExtension(files[i].getName()), files[i]);
         }
         return hashMap;
     }

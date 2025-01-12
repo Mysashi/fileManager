@@ -18,6 +18,7 @@ public class MoveHandler {
 
     public Deque<String> pathToCheck = new ArrayDeque<>();
     public static HashMap<String, File> function1 = new HashMap<>();
+
     {
         pathToCheck.addFirst("C:\\");
     }
@@ -25,7 +26,6 @@ public class MoveHandler {
     public void handleMovement(HBox root, ListView<String> list, MouseEvent e, FileManager fm) {
         if (e.getClickCount() == 2) {
             String selectedItem = list.getSelectionModel().getSelectedItem();
-            System.out.println(selectedItem);
             pathToCheck.addLast(selectedItem + "\\");
             try {
                 HelloApplication.hashMap = fm.showHashMap(String.join("", pathToCheck));

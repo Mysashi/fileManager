@@ -6,6 +6,7 @@ module com.example.filemanager {
     requires com.dlsc.formsfx;
     requires org.kordamp.bootstrapfx.core;
     requires javafx.swing;
+    requires org.apache.commons.io;
 
     opens com.example.filemanager to javafx.fxml;
     exports com.example.filemanager;
