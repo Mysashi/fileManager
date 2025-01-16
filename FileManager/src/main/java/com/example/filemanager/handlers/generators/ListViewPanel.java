@@ -12,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 
@@ -32,24 +33,26 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ListViewPanel {
     //init
-    public MoveHandler mh = new MoveHandler();
-    public static HashMap<String, File> hashMap = new HashMap<>();
-    public static FileManager fm = new FileManager();
 
-    public ListViewPanel(HBox root) {
+    public HashMap<String, File> hashMap = new HashMap<>();
+    public static FileManager fm = new FileManager();
+    private HBox root = new HBox();
+
+    public ListViewPanel() {
         init();
-        creatingPanel(root);
+        creatingPanel();
     }
 
     public void init() {
         hashMap = fm.showHashMap("C:\\");
     }
+    public MoveHandler mh = new MoveHandler(hashMap);
 
-    public ListView<String> creatingPanel(HBox root) {
+    public ListView<String> creatingPanel() {
         ObservableList<String> fileNames = FXCollections.observableArrayList(hashMap.keySet());
         ListView<String> listView = new ListView<>();
         listView.getItems().addAll(fileNames);
-        listView.setOnDragDetected(event ->{
+        listView.setOnDragDetected(event -> {
             Dragboard db = listView.startDragAndDrop(javafx.scene.input.TransferMode.ANY);
             String selected = listView.getSelectionModel().getSelectedItem();
             ClipboardContent content = new ClipboardContent();
@@ -81,47 +84,52 @@ public class ListViewPanel {
             event.setDropCompleted(true);
             event.consume();
         });
-        listView.setOnMouseClicked(event -> {{
-            mh.handleMovement(root, listView, event, fm);
-        }
-        });
         listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
             @Override
             public ListCell<String> call(ListView<String> stringListView) {
                 return new ListViewPanel.AttachmentListCell();
             }
         });
+
+        listView.setOnMouseClicked(event -> {
+            {
+                hashMap = mh.handleMovement(root, listView, event, fm, hashMap);
+                ObservableList<String> fileNamesObservable = FXCollections.observableArrayList(hashMap.keySet());
+                listView.setItems(fileNamesObservable);
+            }
+        });
         root.getChildren().addAll(listView);
         return listView;
     }
 
-    private  static HashMap<String, Image> mapOfIcons = new HashMap<>();
+    public HBox getRoot() {
+        return root;
+    }
 
-    private static class AttachmentListCell extends ListCell<String> {
+    private static HashMap<String, Image> mapOfIcons = new HashMap<>();
+
+    private class AttachmentListCell extends ListCell<String> {
         @Override
         public void updateItem(String item, boolean empty) {
+            System.out.println(hashMap);
+            System.out.println(mapOfIcons);
             super.updateItem(item, empty);
-            System.out.println(item);
             if (empty) {
                 setGraphic(null);
                 setText(null);
             } else {
-
                 if (item.lastIndexOf(".") == -1) {
                     Image fxImage = mapOfIcons.get("");
                     if (fxImage == null) {
                         mapOfIcons.put("", getFileIcon(item));
-                    }
-                    else {
+                    } else {
                         fxImage = mapOfIcons.get("");
                     }
                     ImageView imageView = new ImageView(fxImage);
-//                    String newSize = String.valueOf(size(hashMap.get(item).toPath()));
                     setGraphic(imageView);
                     setText(item);
-                }
-                else {
-                    String clearedString = item.substring(item.lastIndexOf("."), item.length());
+                } else {
+                    String clearedString = item.substring(item.lastIndexOf("."));
                     Image fxImage = mapOfIcons.get(clearedString);
                     if (fxImage == null) {
                         fxImage = getFileIcon(item);
@@ -131,8 +139,6 @@ public class ListViewPanel {
                     setGraphic(imageView);
                     setText(item);
                 }
-
-
             }
         }
 
@@ -141,68 +147,33 @@ public class ListViewPanel {
             return String.valueOf(f.length());
 
         }
-    }
 
-    public static long size(Path path) {
 
-        final AtomicLong size = new AtomicLong(0);
-
-        try {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-
-                    size.addAndGet(attrs.size());
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException exc) {
-
-                    System.out.println("skipped: " + file + " (" + exc + ")");
-                    // Skip folders that can't be traversed
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-
-                    if (exc != null)
-                        System.out.println("had trouble traversing: " + dir + " (" + exc + ")");
-                    // Ignore errors traversing a folder
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new AssertionError("walkFileTree will not throw IOException if the FileVisitor does not");
+        private static javax.swing.Icon getJSwingIconFromFileSystem(File file) {
+            javax.swing.Icon icon = FileSystemView.getFileSystemView().getSystemIcon(file);
+            return icon;
         }
 
-        return size.get();
-    }
-    private static javax.swing.Icon getJSwingIconFromFileSystem(File file) {
-        javax.swing.Icon icon = FileSystemView.getFileSystemView().getSystemIcon(file);
+        private Image getFileIcon(String fname) {
+            System.out.println("ICON LOGGER: " + fname);
+            File file = hashMap.get(fname);
+            Icon fetchedIcon = getJSwingIconFromFileSystem(file);
+            Image fileIcon = jswingIconToImage(fetchedIcon);
+            return fileIcon;
+        }
 
-        // }
-
-        // OS X {
-        //final javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
-        //javax.swing.Icon icon = fc.getUI().getFileView(fc).getIcon(file);
-        // }
-
-        return icon;
-    }
-
-    private static Image getFileIcon(String fname) {
-        File file = hashMap.get(fname);
-        Icon fetchedIcon = getJSwingIconFromFileSystem(file);
-        Image fileIcon =  jswingIconToImage(fetchedIcon);
-        return fileIcon;
-    }
-
-    private static Image jswingIconToImage(javax.swing.Icon jswingIcon) {
-        BufferedImage bufferedImage = new BufferedImage(jswingIcon.getIconWidth(), jswingIcon.getIconHeight(),
-                BufferedImage.TYPE_INT_ARGB);
-        jswingIcon.paintIcon(null, bufferedImage.getGraphics(), 0, 0);
-        return SwingFXUtils.toFXImage(bufferedImage, null);
+        private static Image jswingIconToImage(javax.swing.Icon jswingIcon) {
+            try {
+                BufferedImage bufferedImage = new BufferedImage(jswingIcon.getIconWidth(), jswingIcon.getIconHeight(),
+                        BufferedImage.TYPE_INT_ARGB);
+                jswingIcon.paintIcon(null, bufferedImage.getGraphics(), 0, 0);
+                return SwingFXUtils.toFXImage(bufferedImage, null);
+            }
+            catch (NullPointerException e) {
+                //TODO
+            }
+            return null;
+        }
     }
 }
+

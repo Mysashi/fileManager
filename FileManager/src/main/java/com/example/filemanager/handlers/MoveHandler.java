@@ -17,24 +17,27 @@ import java.util.HashMap;
 public class MoveHandler {
 
     public Deque<String> pathToCheck = new ArrayDeque<>();
-    public static HashMap<String, File> function1 = new HashMap<>();
+    public HashMap<String, File> hashFiles;
+
 
     {
         pathToCheck.addFirst("C:\\");
     }
+    public MoveHandler(HashMap<String, File> hashMap) {
+        this.hashFiles = hashMap;
+    }
 
-    public void handleMovement(HBox root, ListView<String> list, MouseEvent e, FileManager fm) {
+    public HashMap<String, File> handleMovement(HBox root, ListView<String> list, MouseEvent e, FileManager fm, HashMap<String, File> hash) {
         if (e.getClickCount() == 2) {
             String selectedItem = list.getSelectionModel().getSelectedItem();
             pathToCheck.addLast(selectedItem + "\\");
             try {
-                HelloApplication.hashMap = fm.showHashMap(String.join("", pathToCheck));
-                ObservableList<String> fileNames = FXCollections.observableArrayList(HelloApplication.hashMap.keySet());
-                list.setItems(fileNames);
+                hash = fm.showHashMap(String.join("", pathToCheck));
             } catch (NullPointerException ee) {
                 pathToCheck.removeLast();
             }
         }
+        return hash;
     }
 
     public void comeToPreviousTray(FileManager fm, ListView<String> list) {

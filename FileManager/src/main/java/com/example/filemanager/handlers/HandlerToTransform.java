@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -29,6 +30,7 @@ public class HandlerToTransform {
     public HandlerToTransform(ListView<String> listView, MoveHandler moveHandler) {
         this.listView = listView;
         this.moveHandler = moveHandler;
+
     }
 
     public ObservableList<String> dragDrop(DragEvent event, ListView<String> listView) throws IOException {
@@ -40,12 +42,6 @@ public class HandlerToTransform {
             Path needToCopyFile = db.getFiles().getFirst().toPath();
             Path needToCopyThere = new File(String.join("", moveHandler.pathToCheck)).toPath();
             Path fileNameToMove = Paths.get(needToCopyThere + fileName);
-//            Path bytes = Files.copy(
-//                    needToCopyFile, needToCopyThere,
-//                    REPLACE_EXISTING,
-//                    COPY_ATTRIBUTES,
-//                    NOFOLLOW_LINKS
-//            );
             Files.move(needToCopyFile, fileNameToMove, REPLACE_EXISTING);
             System.out.println(needToCopyFile);
             System.out.println(needToCopyThere);
