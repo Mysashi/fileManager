@@ -1,5 +1,9 @@
 package com.example.filemanager.manager;
 
+import com.example.filemanager.handlers.SettingsHandler;
+import com.example.filemanager.javafx_components.SidebarNavigation;
+import javafx.scene.control.Label;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -53,7 +57,9 @@ public class MyFileVisitor {
         public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
             if (attr.isDirectory()) {
                 try {
-                    System.out.format("Directory: %s, size: %d bytes\n", file, getDirSize(file));
+
+                    String s = String.format("Directory: %s, size: %d bytes\n", file, getDirSize(file));
+                    SettingsHandler.getLogs().getChildren().add(new Label(s));
                     listViewMap.put("DIRECTORY: " + file.toFile().getPath(), getDirSize(file));
 
                 } catch (IOException e) {

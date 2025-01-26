@@ -2,6 +2,7 @@ package com.example.filemanager.handlers.generators;
 
 import com.example.filemanager.handlers.HandlerToTransform;
 import com.example.filemanager.handlers.MoveHandler;
+import com.example.filemanager.javafx_components.FileContextMenu;
 import com.example.filemanager.manager.FileManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -93,9 +94,11 @@ public class ListViewPanel {
 
         listView.setOnMouseClicked(event -> {
             {
-                hashMap = mh.handleMovement(root, listView, event, fm, hashMap);
-                ObservableList<String> fileNamesObservable = FXCollections.observableArrayList(hashMap.keySet());
-                listView.setItems(fileNamesObservable);
+                if (event.getClickCount() == 2) {
+                    hashMap = mh.handleMovement(root, listView, event, fm, hashMap);
+                    ObservableList<String> fileNamesObservable = FXCollections.observableArrayList(hashMap.keySet());
+                    listView.setItems(fileNamesObservable);
+                }
             }
         });
         root.getChildren().addAll(listView);

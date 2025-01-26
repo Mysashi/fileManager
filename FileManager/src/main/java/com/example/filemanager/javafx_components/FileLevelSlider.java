@@ -22,6 +22,10 @@ public class FileLevelSlider {
         slider.setMax(10);
         slider.setShowTickMarks(true);
         slider.setBlockIncrement(1);
+        slider.setMinorTickCount(1);
+        slider.setMajorTickUnit(10);
+        slider.setShowTickMarks(true);
+        slider.setShowTickLabels(true);
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {

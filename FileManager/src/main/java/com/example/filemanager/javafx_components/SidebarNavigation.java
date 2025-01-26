@@ -1,17 +1,27 @@
 package com.example.filemanager.javafx_components;
+import com.example.filemanager.handlers.SettingsHandler;
 import com.example.filemanager.handlers.generators.ListViewPanel;
 import com.example.filemanager.manager.FileManager;
 import com.example.filemanager.manager.MyFileVisitor;
+
+import com.example.filemanager.utils.DragResizeMod;
+import com.example.filemanager.utils.ResizableScrollPane;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Button;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.geometry.Pos;
-import javafx.scene.control.ListView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.CheckBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.File;
 import java.util.*;
@@ -20,6 +30,8 @@ import java.util.stream.Collectors;
 public class SidebarNavigation {
     public static File f;
     public static ListView<String> listView;
+    public static String path;
+    public static int indexDelete;
 
     public static File getFile() {
         return f;
@@ -29,6 +41,9 @@ public class SidebarNavigation {
         VBox sidebar = new VBox(10);
         FileManager fm = new FileManager();
         HBox contentAreaForPanels = new HBox();
+
+
+
         listView = new ListView<String>();
         sidebar.setStyle("-fx-background-color: #e0e0e0;");
         sidebar.setMinWidth(200);
@@ -36,12 +51,11 @@ public class SidebarNavigation {
         Button panelFiles = createSidebarButton("Панели файлов");
         Button sizeCounter = createSidebarButton("Подсчет занятой дисковой памяти");
         Button settingButton = createSidebarButton("Настройки");
-
-
         Button creationButton = new Button("CREATE PANEL");
         Button startSizing = new Button("START COUNTING SIZE");
 
-        panelFiles.setOnAction(e ->  {
+        panelFiles.setOnAction(e -> {
+            DragResizeMod.makeResizable(contentAreaForPanels);
             root.setRight(creationButton);
             root.setCenter(contentAreaForPanels);
         });
@@ -55,28 +69,40 @@ public class SidebarNavigation {
 
         startSizing.setOnAction(e -> {
             listView.getItems().clear();
+            listView.setContextMenu(new FileContextMenu().createContextMenu());
             DirectoryChooser fileChooser = new DirectoryChooser();
             f = fileChooser.showDialog(stage);
             HashMap<String, Long> hashMapOfSize = MyFileVisitor.getNthMap(walkingTreeInit(f), 20);
             ArrayList<String> arrayList = new ArrayList<>();
-            hashMapOfSize.forEach((k,v) -> arrayList.add(k + "  " + MyFileVisitor.convertToHumanMeasure(v)));
+            hashMapOfSize.forEach((k, v) -> arrayList.add(k + "  " + MyFileVisitor.convertToHumanMeasure(v)));
             ObservableList<String> observList = FXCollections.observableArrayList(arrayList);
             listView.setItems(observList);
 
         });
-        listView.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2) {
-                    String item = listView.getSelectionModel().getSelectedItem();
-                    int index = item.indexOf(":");
-                    String path = item.substring(index + 1, item.lastIndexOf("  ")).trim();
-                    fm.openFileOrDirectory(path);
-                }
+        listView.getItems().addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> change) {
+                System.out.println("was added");
+                listView.refresh();
+            }
         });
-        sizeCounter.setOnAction(e ->  {
+        listView.setOnMouseClicked(e -> {
+            String item = listView.getSelectionModel().getSelectedItem();
+            indexDelete = listView.getSelectionModel().getSelectedIndex();
+            int index = item.indexOf(":");
+            path = item.substring(index + 1, item.lastIndexOf("  ")).trim();
+            if (e.getClickCount() == 2) {
+                fm.openFileOrDirectory(path);
+            }
+        });
+        sizeCounter.setOnAction(e -> {
             root.setRight(startSizing);
             root.setCenter(listView);
         });
-        settingButton.setOnAction(e -> System.out.println("Settings Clicked!"));
+        settingButton.setOnAction(e -> {
+            SettingsHandler settingsHandler = new SettingsHandler();
+            settingsHandler.init(root);
+        });
         return sidebar;
     }
 
@@ -91,4 +117,5 @@ public class SidebarNavigation {
         HashMap<String, Long> hash = MyFileVisitor.counterSize(p, 1);
         return hash;
     }
+
 }

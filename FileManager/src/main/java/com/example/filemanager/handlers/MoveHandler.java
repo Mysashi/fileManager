@@ -28,14 +28,12 @@ public class MoveHandler {
     }
 
     public HashMap<String, File> handleMovement(HBox root, ListView<String> list, MouseEvent e, FileManager fm, HashMap<String, File> hash) {
-        if (e.getClickCount() == 2) {
-            String selectedItem = list.getSelectionModel().getSelectedItem();
-            pathToCheck.addLast(selectedItem + "\\");
-            try {
-                hash = fm.showHashMap(String.join("", pathToCheck));
-            } catch (NullPointerException ee) {
-                pathToCheck.removeLast();
-            }
+        String selectedItem = list.getSelectionModel().getSelectedItem();
+        pathToCheck.addLast(selectedItem + "\\");
+        try {
+            hash = fm.showHashMap(String.join("", pathToCheck));
+        } catch (NullPointerException ee) {
+            pathToCheck.removeLast();
         }
         return hash;
     }
