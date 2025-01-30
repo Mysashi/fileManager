@@ -4,6 +4,7 @@ import com.example.filemanager.javafx_components.SidebarNavigation;
 import com.example.filemanager.utils.DragResizeMod;
 import com.example.filemanager.utils.ResizableScrollPane;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -21,6 +22,11 @@ public class SettingsHandler {
 
     public static VBox getLogs() {
         return logs;
+    }
+
+
+    public static void writeInLogs(String e)  {
+        logs.getChildren().add(new Label(e));
     }
     public boolean is_ticked = false;
 
